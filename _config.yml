@@ -1,0 +1,19 @@
+# Setup
+title:               OSX Security
+tagline:             'Reverse engineering OSX malware, OSX development, general infosec'
+description:         'Hello, this blog is a place where we will explore all things related to OSX and security.'
+url:                 https://seafoodfry.github.io/
+baseurl:             ''
+paginate:            5
+permalink:           pretty
+
+# About/contact
+author:
+  name:              seafoodfry
+
+# Gems
+plugins:
+  - jekyll-paginate
+
+# Custom vars
+version:             1.0.0
