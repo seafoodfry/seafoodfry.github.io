@@ -1,6 +1,8 @@
 ---
 layout: post
 title: Example content
+date: '04 02 2020'
+categories: security
 ---
 
 

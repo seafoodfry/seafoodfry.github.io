@@ -4,7 +4,4 @@ RUN gem install jekyll jekyll-gist jekyll-sitemap jekyll-seo-tag jekyll-paginate
 COPY . /app
 
 WORKDIR /app
-#ENTRYPOINT ["/bin/bash"]
-
-EXPOSE 4000
 ENTRYPOINT ["jekyll", "serve", "--livereload", "--host", "0.0.0.0"]
