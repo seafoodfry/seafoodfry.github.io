@@ -165,7 +165,7 @@ To get to this menu, look at the bottom-left of the editor window.
 There, you’ll see a square icon, click it.
 
 <p align="center">
-  <img src="/assets/2022-02-19-images/document-outline.png" width="300" height="500" class="center"/>
+  <img src="/assets/2022-02-19-images/document-outline.png" width="200" height="200" class="center"/>
 </p>
 
 ---
