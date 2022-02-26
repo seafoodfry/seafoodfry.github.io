@@ -112,7 +112,7 @@ Then you’ll be able to add action-methods for the UI objects you added.
 
 After you are done going through the walkthroughs to add outlets for the text field and the slider, you will see the website mentioned that the following code was added to the implementation file, `AppDelegate.m`
 
-```objective-c
+```objc
 @synthesize textField;
 @synthesize slider;
 ```
