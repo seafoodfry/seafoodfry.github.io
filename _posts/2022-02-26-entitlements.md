@@ -8,7 +8,7 @@ excerpt_separator: <!--more-->
 
 Welcome back!
 If you read through
-{% post_url 2022-02-19-getting-started-osx  %}
+[Getting started with OSX]({% post_url 2022-02-19-getting-started-osx  %})
 Then you already now that our first milestone is to gain some familiarity with
 Apple’s [EndpointSecurity framework](https://developer.apple.com/documentation/endpointsecurity).
 
