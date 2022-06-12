@@ -268,7 +268,7 @@ Plus it will also allow you to readily assume the role you configured for access
 
 As an example,
 If your `~/.aws/config` file looks a tad like this
-```toml
+```
 [profile <username>]
 region = us-west-2
 output = json
