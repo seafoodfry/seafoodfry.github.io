@@ -327,3 +327,76 @@ Now for links (EC2 Instance Connect, documentation for Windows and Linux key pai
 * [Connect to your Linux instance using SSH](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AccessingInstancesLinux.html)
 * [Amazon EC2 key pairs and Linux instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
 * [Amazon EC2 key pairs and Windows instances](https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-key-pairs.html)
+
+## Using an EC2 via SSH
+
+To SSH into an EC2, you will first need to create a "key pair".
+A key pair will integrate with an EC2 instance so that your public key ends up in the EC2 and the private one ends up in your computer.
+However, it is best to create a set of SSH keys with a password (this will protect your private key).
+This also means that you will need to "import" (your public key) into a key pari.
+To do so, generate a key pair, set a good password, and import it by doing the following
+1. EC2 dashbaord
+1. key pairs
+1. Actions > Import key pair
+
+Once you have a key pair, do the following to spin up an EC2
+1. EC2 dashboard
+1. Launch Instance
+1. Name it
+1. Chose AMI
+1. Chose instance type
+1. Chose the key pair you previously created
+1. Select Create security group
+1. Select Allow SSH from and chose My IP
+1. On storage, set Encrypted to Yes and use the default KMS key (you may have to click on Advanced, for these options to show up)
+1. If you want to keep the data you will use in your EC2, set Delete on termination to No
+1. (Optional) Advanced details Request Spot Instance
+
+If you did request a spot instance and you want to terminate/stop it, you will have to click on the "Spot Requests" option
+in the EC2 dashboard and cancel the request for your EC2 before you can terminate it.
+
+## Restoring your Data
+
+If you terminated your instance but want to get the data you had in there then you have a couple options:
+1. Create a new EC2, stop it, detach its root volume and attach your old volume.
+1. Mount your old volume.
+
+### Replace a Root Volume
+
+To replace the root volume of your machine (which is not straightforward to do if you requested it as a spot instance)
+you need to stop the instance, detach the root volume, then you can attach an old one.
+
+### Mount an EBS Volume
+
+The instructions for this are more elaborate but very well explained in
+[Make an Amazon EBS volume available for use on Linux](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html).
+Just a couple of useful notes:
+
+If you try to mount your volume and you get a message like the following
+```
+mount: /data: wrong fs type, bad option, bad superblock on /dev/xvdf, missing codepage or helper program, or other error.
+```
+
+It is possible that the error may be due to the fact that your old EBS was a root volume and was already partitioned, as explained by this comment:
+> Looks like you have partitioned that block device. In this case, you need to mount `/dev/xvdf1`, not just `/dev/xvdf`.
+Source [Cannot mount an existing EBS on AWS](https://serverfault.com/questions/632905/cannot-mount-an-existing-ebs-on-aws).
+
+You may also noticed the above when you run `lsblk` as you will see the disk with multiple partitions
+```
+$ lsblk
+NAME     MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+...
+xvda     202:0    0    8G  0 disk
+├─xvda1  202:1    0  7.9G  0 part /
+├─xvda14 202:14   0    4M  0 part
+└─xvda15 202:15   0  106M  0 part /boot/efi
+xvdf     202:80   0    8G  0 disk
+├─xvdf1  202:81   0  7.9G  0 part
+├─xvdf14 202:94   0    4M  0 part
+└─xvdf15 202:95   0  106M  0 part
+```
+
+Also, if you want to unmount your volume, you can do so by executing the following command
+```
+sudo umount /data
+```
