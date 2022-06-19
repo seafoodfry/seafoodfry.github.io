@@ -328,7 +328,7 @@ Now for links (EC2 Instance Connect, documentation for Windows and Linux key pai
 * [Amazon EC2 key pairs and Linux instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
 * [Amazon EC2 key pairs and Windows instances](https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-key-pairs.html)
 
-## Using an EC2 via SSH
+### SSH
 
 To SSH into an EC2, you will first need to create a "key pair".
 A key pair will integrate with an EC2 instance so that your public key ends up in the EC2 and the private one ends up in your computer.
@@ -355,18 +355,55 @@ Once you have a key pair, do the following to spin up an EC2
 If you did request a spot instance and you want to terminate/stop it, you will have to click on the "Spot Requests" option
 in the EC2 dashboard and cancel the request for your EC2 before you can terminate it.
 
-## Restoring your Data
+### TMUX
+
+Tmux is for those occasions in which you may want to leave one or more processes running in your instance after you terminate the SSH connection.
+
+To start a session, do
+```
+tmux
+```
+You can name the given session by doing `ctrl`+`b` and then `$`.
+Alternatively, you can create a session and name it by running
+```
+tmux new -s name
+```
+
+To detach from a session, so you can safely terminate the SSH connection, do
+```
+tmux detach
+```
+The hotkey for this is `ctrl`+`b` and then `d`.
+
+Then, once you SSH back in, you can get do the following
+```
+tmux attach
+```
+If you named the session, you can also do `tmux attach -t <nname>`.
+
+To list all sessions,
+```
+tmux ls
+```
+
+If you want to play with tmux and have friends you trust, try taking a look at
+[Remote Pair Programming Made Easy with SSH and tmux](https://www.hamvocke.com/blog/remote-pair-programming-with-tmux/).
+
+### Restoring your Data
 
 If you terminated your instance but want to get the data you had in there then you have a couple options:
 1. Create a new EC2, stop it, detach its root volume and attach your old volume.
 1. Mount your old volume.
 
-### Replace a Root Volume
+There is the other option to creta an "image" from a runnig instance.
+We will not cover that since that is more straightforward - it leads you to creating an AMI, so any time you start a new EC2, you simply need to chose the AMI you created.
+
+#### Replace a Root Volume
 
 To replace the root volume of your machine (which is not straightforward to do if you requested it as a spot instance)
 you need to stop the instance, detach the root volume, then you can attach an old one.
 
-### Mount an EBS Volume
+#### Mount an EBS Volume
 
 The instructions for this are more elaborate but very well explained in
 [Make an Amazon EBS volume available for use on Linux](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html).
@@ -399,4 +436,17 @@ xvdf     202:80   0    8G  0 disk
 Also, if you want to unmount your volume, you can do so by executing the following command
 ```
 sudo umount /data
+```
+
+#### Resizing Volumes
+
+In case you run out of space, you may want this page open
+[Extend a Linux file system after resizing a volume](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html).
+If you are using a windows machine then use these docs instead
+[Amazon EBS Elastic Volumes](https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ebs-modify-volume.html).
+
+Read the above carefully.
+Also, if you want to figure out exactly what folders are taking up a lot of space, you may want to use
+```
+sudo dh -shc /home
 ```
