@@ -328,6 +328,15 @@ Now for links (EC2 Instance Connect, documentation for Windows and Linux key pai
 * [Amazon EC2 key pairs and Linux instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html)
 * [Amazon EC2 key pairs and Windows instances](https://docs.aws.amazon.com/AWSEC2/latest/WindowsGuide/ec2-key-pairs.html)
 
+Understanding AWS' pricing is a whole different skill.
+For those purposes, check out these docs
+* If you want to use t2, t3, or t3a instances, read [Burstable performance instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-performance-instances.html).
+  * As you go through the above, you'll benefit from having this page open [Amazon EC2 T3 Instances](https://aws.amazon.com/ec2/instance-types/t3/).
+* Keep in mind that gp3 volumes tend to be chepaer than gp2 ones.
+* Try to always request spot instances.
+  * If you want to keep an ec2 and request it as a spot instance, try creating a "persistent spot request".
+    Only instances associated with a persistent spot request can be stoped.
+
 ### SSH
 
 To SSH into an EC2, you will first need to create a "key pair".
