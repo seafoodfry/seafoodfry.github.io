@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Setting Up an AWS Lab
-date: '2022-06-12'
+date: '2024-05-27'
 categories: [AWS, lab]
 excerpt_separator: <!--more-->
 ---
@@ -256,8 +256,13 @@ See
 ## Tools
 
 ### AWS-Vault
-The one tool I'd recommend, when working with AWS is:
+
+We used to recommend 
 [github.com/99designs/aws-vault](https://github.com/99designs/aws-vault).
+But we now think that using the 1Password CLI is a better way of working if you have nothing else built.
+We are leaving this section as initially written in 2022 but we strongly recommend you find another option.
+Jump to the next section to see how we use the 1Password CLI to work with AWS.
+
 Make sure to read
 [Securing AWS Credentials on Engineer’s Machines ](https://99designs.com.au/blog/engineering/aws-vault/).
 
@@ -300,6 +305,84 @@ And the temporary credentials will be cached for you
 ```
 aws-vault list
 ```
+
+
+### 1Password CLI
+
+[Use 1Password to securely authenticate the AWS CLI](https://developer.1password.com/docs/cli/shell-plugins/aws/)
+outlines the steps you need to follow in order to securily authenticate with AWS via 1Password.
+Follow them, create some IAM user and store its access key and secret key in there.
+The one possibly useful tip is that it may be helpful to create a second MFA device for the user so that you have a TOTP associated
+with the 1password entry where you are storing the IAM user credentials.
+This way the CLI will be able to pull all the data it needs at once.
+
+We then found the following `~/.aws/config` useful:
+
+```
+[default]
+region = us-east-2
+output = json
+
+[profile user]
+region = us-east-2
+output = json
+
+[profile ec2]
+source_profile = user
+region = us-east-2
+output = json
+role_arn = arn:aws:iam::<ACCOUNT_ID>:role/PowerUser
+```
+
+The CLI will know to ask you for your biometrics before accessing the associated 1password item and you will be able to securely
+use your credentials when needed.
+
+You should now be able to run
+```
+aws sts get-caller-identity
+```
+and get a proper response.
+
+The most useful bit of docs to leave you with now is
+[Use secret references with 1Password CLI](https://developer.1password.com/docs/cli/secret-references).
+
+This way you can assume a role and pass its temp credentials to other processes.
+We haven't found a way to get 1Password to do this for us yet, but we did come up with this handy shell script:
+
+```bash
+#!/bin/sh
+#
+# Note that when relying on the 1pass shell plugin inside of a script we do have to prefix commands
+# with `op plugin run --`.
+# We are explicitly not using AWS_PROFILE because otherwise the aws cmds will not work.
+set -e
+
+ROLE=$(op run --no-masking --env-file=app.env -- printenv ROLE)
+
+OUT=$(op plugin run -- aws sts assume-role  --duration-seconds 900 --role-arn $ROLE --role-session-name test)
+
+export AWS_ACCESS_KEY_ID=$(echo $OUT | jq -r '.Credentials.AccessKeyId')
+export AWS_SECRET_ACCESS_KEY=$(echo $OUT | jq -r '.Credentials.SecretAccessKey')
+export AWS_SESSION_TOKEN=$(echo $OUT | jq -r '.Credentials.SessionToken')
+
+"$@"
+```
+
+In `app.env` we have the following
+
+```
+ROLE="op://Private/AWS user key/iam role"
+```
+(We have storing the IAM role ARN under the field "iam role" in the item "AWS user key" in the Private vault.)
+
+With that in place we can now run
+```
+./run-cmd-in-shell.sh aws sts get-caller-identity
+```
+
+With the utility in place you are all set.
+
+
 
 ---
 
