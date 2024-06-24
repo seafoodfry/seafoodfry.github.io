@@ -1,6 +1,6 @@
 # Setup
 title:               Seafoodfry
-tagline:             'Cloud computing, Graphics, CUDA, lattice QCD, QM, and some other math'
+tagline:             'Cloud computing, Graphics, CUDA, lattice QCD, QM, and some other maths.'
 description:         'Hello, this blog is a place where Im documenting a ton of interesting stuff I haveve been learning while working on lattice QCD.'
 url:                 https://seafoodfry.github.io
 baseurl:             ''
