@@ -70,7 +70,7 @@ We also assume that any you'll understand when we say that we stored all the sec
 to use these values.
 
 In
-[Setting Up an AWS Lab for Graphics Programming]({{ site.baseurl }}/aws/lab/2024/06/21/graphics-pt-01/)
+[Setting Up an AWS Lab for Graphics Programming]({{ site.baseurl }}/aws/lab/gpu/graphics/2024/06/21/graphics-pt-01/)
 we also introduced the `tfenv` CLI, but let's copy-paste that bit here too:
 [github.com/tfutils/tfenv](https://github.com/tfutils/tfenv)
 is our recommended way to manage the Terraform versions you will need.
