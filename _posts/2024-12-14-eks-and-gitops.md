@@ -6,29 +6,50 @@ categories: [AWS, EKS, GitOps, Flux, Karpenter]
 excerpt_separator: <!--more-->
 ---
 
-Remember that time you deployed something to production and crossed your fingers hoping it would work? Or that sinking feeling when you realized your development environment was nothing like production? Well, I've been there too. That's why I embarked on this journey to build a Kubernetes platform that's both reliable and easy to work with (as much as possible).
+Hi all, this time we wanted to make a post on a sample platform we have been building over in our project
+[github.com/seafoodfry/bluesky-platform](https://github.com/seafoodfry/bluesky-platform).
 
-In this post, I'll walk you through how to set up an EKS (Elastic Kubernetes Service) platform that manages itself using GitOps - which is basically letting Git be your source of truth instead of manually poking at servers and hoping for the best. Think of it as teaching your infrastructure to read and follow instructions, rather than having to hand-hold it through every change.
+Here we designed a thing for us to do some R&D, development, and to run some apps.
+This platform is built from an EKS cluster that can only be accessed through an IP allow list,
+and that maps RBAC permissions directly to IAM roles - getting rid of the `aws-auth` configmap.
 
-The secret sauce here is a combination of Flux (our GitOps conductor) and Karpenter (our infrastructure DJ who knows exactly when to spin up or down compute resources). It's like having a really efficient assistant who reads your Git commits and makes sure everything runs smoothly while also keeping an eye on costs.
+Along with that, the EKS cluster has a single managed node group where [Flux](https://fluxcd.io/)
+bootstraps [karpenter](https://karpenter.sh/) for node management.
+This way we can have all workloads managed by Flux with GitOps - simplifying the delivery part of CICD -
+and we can have karpenter to scale our cluster quickly and in the most economic manner. 
 
-**The code we'll discuss is in
-[github.com/seafoodfry/bluesky-platform/infra](https://github.com/seafoodfry/bluesky-platform/tree/main/infra).**
+The complete code is available in
+[github.com/seafoodfry/bluesky-platform/infra](https://github.com/seafoodfry/bluesky-platform/tree/main/infra).
+There is also a design document at
+[github.com/seafoodfry/bluesky-platform/docs/designs/001-eks](https://github.com/seafoodfry/bluesky-platform/tree/main/docs/designs/001-eks)
+that explains our thinking process and technical decisions in depth.
+
+We also documented how we are using the platform over at
+[github.com/seafoodfry/bluesky-platform/infra](https://github.com/seafoodfry/bluesky-platform/tree/main/infra).
+It outlines how we create and destroy everything needed for this platform.
+It also includes example Cloudwatch Log Insight quereis, handy `kubectl` commands to debug Flux and Karpenter, and many other things.
 
 <!--more-->
 
-Why did I build this? Well, I needed a development and testing environment that wouldn't make me pull my hair out every time I needed to spin up a new cluster. Something robust enough to trust with real workloads, but not so complex that I'd need a PhD in cloud architecture to understand it. Plus, I wanted to document everything properly because future-me tends to forget what past-me was thinking.
+Before we proceed let's briefly talk over some things.
 
-Think of this setup as your Kubernetes happy place - where your infrastructure is version controlled, your deployments are automated, and your resources scale themselves. No more "works on my machine" syndrome, no more manual node scaling, and definitely no more midnight infrastructure emergencies (okay, maybe still some, but fewer!).
+Kubernetes is a very reliable and relatively cheap platform.
+It allows for a standardize way of running things in research, development, and production.
+We have been maintaining of research environment over at
+[github.com/seafoodfry/ml-workspace/gpu-sandbox](https://github.com/seafoodfry/ml-workspace/tree/main/gpu-sandbox) - and we will continue to do so - but sometimes we need a more "real life" environment
+where we can provision and orchestrate multiple apps and infra resources.
 
-In this guide, I'll show you:
-- How to set up this whole shebang from scratch
-- The cool bits that make it work (and why they're cool)
-- How to not blow your AWS budget in the process
-- What to do when things inevitably go sideways
+Then comes the [Flux](https://fluxcd.io/) part.
+Most people will use Jenkins or GitLab.
+But with a tad better UX come GitHub Actions.
+But they "push" data to a cluster.
+GitOps is a different model where we can have a controller "pulling" from a Git repo.
+And on top of that, Flux can manage Helm chart, kustomize, and plain YAML all via its different CustomResources.
+So it unifies all the ways of deploying applications and it ensures that everything looks the way you want it, constantly.
 
-So grab your favorite beverage, fire up your terminal, and let's build something awesome together.
-
+Then it came karpenter.
+If you are like me, you may still be hooked into the cluster autoscaler, but it just so happens that technology has advanced a good deal since we were deploying that thing on mass.
+Karpenter is faster to scale up and down a cluster, and it is more flexible because it can figure out a good and descent EC2 given any workloads that are pending. (And its super simple to request spot instances!)
 
 
 ## Table of Contents
@@ -40,21 +61,26 @@ So grab your favorite beverage, fire up your terminal, and let's build something
 
 ## Requirements
 
-This post will builds upon
-[Setting Up an AWS Lab]({{ site.baseurl }}/aws/lab/2024/05/27/aws-lab-setup/)
-in so much so that we assume you have a working IAM role that you can use to execute
-AWS API calls.
-We will use this foundation to outline a Terraform workspace to spin up GPU and non-GPU instances for graphics programming.
+This post builds upon
+[Setting Up an AWS Lab]({{ site.baseurl }}/aws/lab/2024/05/27/aws-lab-setup/).
+We assume that you have a similar configuration in such a way that you can readily get a temporary set of credentials for an IAM role in a manner similar to our `./run-cmd-in-shell.sh` wrapper script.
 
-You can go ahead and continue reading, just be mindful that whenever we write things such as
+We also assume that any you'll understand when we say that we stored all the secrets necessary to manage our platform in a 1Password vault and are using the
+[`op` CLI](https://developer.1password.com/docs/cli/get-started/)
+to use these values.
+
+In
+[Setting Up an AWS Lab for Graphics Programming]({{ site.baseurl }}/aws/lab/2024/06/21/graphics-pt-01/)
+we also introduced the `tfenv` CLI, but let's copy-paste that bit here too:
+[github.com/tfutils/tfenv](https://github.com/tfutils/tfenv)
+is our recommended way to manage the Terraform versions you will need.
+
+For this example we did
 ```
-./run-cmd-in-shell.sh aws sts get-caller-identity
+tfenv init
+tfenv install 1.8.4
+tfenv use 1.8.4
 ```
-
-The `./run-cmd-in-shell.sh` is a wrapper script we described in that previous post that allows us to run commands with a valid set of temporary IAM IAM role credentials.
-
-Also keep in mind that our configurations are very 1Password centric since no one should be routinely having any sort of IAM user credentials in plain text or in a file on disk - but we also don't yet need to configure SSO access or anything of the sort.
-
 
 ---
 
