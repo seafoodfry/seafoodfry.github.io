@@ -126,16 +126,22 @@ And the best part? When you want to make a change, you just update the relevant 
 
 ---
 
-## Behind the Engineering: Key Decisions and Implementations
+## Behind the Engineering
 
-After covering the high-level architecture, let's dig into the actual engineering decisions that make this platform work. The complete code is available in [github.com/seafoodfry/bluesky-platform/infra](https://github.com/seafoodfry/bluesky-platform/tree/main/infra), and there's also a detailed design document at
-[github.com/seafoodfry/bluesky-platform/docs/designs/001-eks](https://github.com/seafoodfry/bluesky-platform/tree/main/docs/designs/001-eks)
-that explains our thinking process and technical decisions in depth.
+### Why Kustomize?
 
-You can also read the README for the infrastructure over at
-[github.com/seafoodfry/bluesky-platform/infra](https://github.com/seafoodfry/bluesky-platform/tree/main/infra).
-It will fill in how we create and destroy everything needed for this platform.
-It also includes example Cloudwatch Log Insight quereis, handy `kubectl` commands to debug Flux and Karpenter., and many other gems.
+Kustomize can be complex as it supports a ton of stuffs.
+See
+[github.com/kubernetes-sigs/kustomize/examples](https://github.com/kubernetes-sigs/kustomize/tree/master/examples).
+
+But the Helm templating language is hella worse.
+
+And the cool thing with Flux is that it relies on kustomize, so it is harder to get your
+deployment artifacts out of control.
+And anytime we deal with plain YAML (even it if was kustomized), you avoid the chances of running into
+troubles because Helm was managing some field in someway and someone manually modifed it at some point.
+
+And you can still install Helm charts with Flux, so all is good.
 
 ### The Challenge of Idempotent GitOps
 
@@ -143,15 +149,11 @@ One of the first challenges we faced was implementing GitOps in a truly idempote
 
 This experience taught us that we needed to carefully structure our GitOps resources to respect dependencies. The solution came from studying the [flux2-kustomize-helm-example](https://github.com/fluxcd/flux2-kustomize-helm-example) repository, which outlines a pattern for separating resources based on their dependencies.
 
-### The Core and The Edge
 
-Our implementation divides workloads into three distinct categories:
 
-1. Core cluster controllers in `kube/infra/controllers`
-2. Infrastructure configurations in `kube/infra/configs`
-3. Application workloads in `kube/apps/base` and their cluster-specific patches
+---
 
-This separation isn't just organizational - it's crucial for reliability. The core controllers (like Karpenter) must be installed before any resources that depend on them (like EC2NodeClasses). By structuring our GitOps configuration this way, we ensure that resources are applied in the correct order, making the system truly idempotent.
+## Other Useful Bits
 
 ### Security Through IAM
 
