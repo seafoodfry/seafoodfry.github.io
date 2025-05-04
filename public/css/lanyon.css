@@ -556,3 +556,29 @@ a.pagination-item:hover {
 .layout-reverse.sidebar-overlay #sidebar-checkbox:checked ~ .sidebar {
   box-shadow: -.25rem 0 .5rem rgba(0,0,0,.1);
 }
+
+
+
+
+/* Added for language picking */
+.language-switcher {
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+}
+
+.current-lang {
+  font-weight: bold;
+  color: #268bd2;
+}
+
+.lang-link {
+  color: #515151;
+  text-decoration: none;
+}
+
+.lang-link:hover {
+  color: #268bd2;
+  text-decoration: underline;
+}
