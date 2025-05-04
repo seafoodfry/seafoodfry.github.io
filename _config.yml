@@ -1,10 +1,9 @@
 # Setup
 title:               Seafoodfry
-tagline:             'Cloud computing, Graphics, CUDA, lattice QCD, QM, and some other maths.'
-description:         'Hello, this blog is a place where Im documenting a ton of interesting stuff I haveve been learning while working on lattice QCD.'
+tagline:             'Cloud computing, Graphics, engineering, and some fun AI stuff'
+description:         'Hello, this blog is a place where Im documenting the interesting stuff I come across'
 url:                 https://seafoodfry.github.io
 baseurl:             ''
-paginate:            10
 permalink:           pretty
 
 # About/contact
@@ -13,8 +12,28 @@ author:
 
 # Gems
 plugins:
-  - jekyll-paginate
+  - jekyll-paginate-v2
   - jekyll-sitemap
 
 # Custom vars
 version:             1.0.0
+
+# Language defaults
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      lang: "en"
+
+pagination:
+  enabled: true
+  per_page: 10
+  permalink: '/page/:num/'
+  title: ':title - page :num'
+  limit: 0
+  sort_field: 'date'
+  sort_reverse: true
+  trail: 
+    before: 2
+    after: 2

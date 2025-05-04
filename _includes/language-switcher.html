@@ -1,0 +1,25 @@
+{% if page.translations %}
+<div class="language-switcher">
+  <span>Languages: </span>
+  {% for translation in page.translations %}
+    {% if translation[0] == page.lang %}
+      <span class="current-lang">
+        {% case translation[0] %}
+          {% when 'en' %}English
+          {% when 'ja' %}日本語
+          {% when 'zh' %}中文
+        {% endcase %}
+      </span>
+    {% else %}
+      <a href="{{ translation[1] | absolute_url }}" class="lang-link">
+        {% case translation[0] %}
+          {% when 'en' %}English
+          {% when 'ja' %}日本語
+          {% when 'zh' %}中文
+        {% endcase %}
+      </a>
+    {% endif %}
+    {% unless forloop.last %} | {% endunless %}
+  {% endfor %}
+</div>
+{% endif %}

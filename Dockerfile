@@ -1,6 +1,6 @@
-FROM ruby:3.1.0
+FROM ruby:3.4.3
 
-RUN gem install jekyll jekyll-gist jekyll-sitemap jekyll-seo-tag jekyll-paginate webrick
+RUN gem install jekyll jekyll-gist jekyll-sitemap jekyll-seo-tag jekyll-paginate-v2 webrick
 COPY . /app
 
 WORKDIR /app
