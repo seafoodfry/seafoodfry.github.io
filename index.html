@@ -1,13 +1,11 @@
 ---
 layout: default
 title: Home
-pagination:
-  enabled: true
 ---
 
 <div class="posts">
-  {% assign english_posts = paginator.posts | where: "lang", "en" %}
-  {% for post in english_posts %}
+  {% assign english_posts = site.posts | where: "lang", "en" %}
+  {% for post in english_posts limit: 10 %}
   <div class="post">
     <h1 class="post-title">
       <a href="{{ post.url | absolute_url }}">
@@ -23,17 +21,6 @@ pagination:
 </div>
 
 <div class="pagination">
-  {% if paginator.total_pages > 1 %}
-    {% if paginator.previous_page %}
-      <a class="pagination-item newer" href="{{ paginator.previous_page_path | prepend: site.baseurl }}">Newer</a>
-    {% else %}
-      <span class="pagination-item newer">Newer</span>
-    {% endif %}
-
-    {% if paginator.next_page %}
-      <a class="pagination-item older" href="{{ paginator.next_page_path | prepend: site.baseurl }}">Older</a>
-    {% else %}
-      <span class="pagination-item older">Older</span>
-    {% endif %}
-  {% endif %}
+  <span class="pagination-item older">Older</span>
+  <span class="pagination-item newer">Newer</span>
 </div>

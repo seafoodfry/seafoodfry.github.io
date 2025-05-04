@@ -12,7 +12,7 @@ author:
 
 # Gems
 plugins:
-  - jekyll-paginate-v2
+  - jekyll-paginate
   - jekyll-sitemap
 
 # Custom vars
@@ -25,15 +25,3 @@ defaults:
       type: "posts"
     values:
       lang: "en"
-
-pagination:
-  enabled: true
-  per_page: 10
-  permalink: '/page/:num/'
-  title: ':title - page :num'
-  limit: 0
-  sort_field: 'date'
-  sort_reverse: true
-  trail: 
-    before: 2
-    after: 2
